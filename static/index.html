@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pqno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,200&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:            #0c0b09;
+      --surface:       #131210;
+      --surface-hi:    #1b1916;
+      --border:        #242018;
+      --border-hi:     #332e25;
+      --text:          #e6e0d4;
+      --muted:         #6b6456;
+      --accent:        #c9953a;
+      --accent-hi:     #d9a84a;
+      --accent-glow:   rgba(201,149,58,.14);
+      --danger-bg:     rgba(139,58,58,.2);
+      --danger-text:   #e07070;
+      --mono:          'Fira Code', 'Courier New', monospace;
+      --serif:         'Fraunces', Georgia, serif;
+      --ease:          180ms ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: .032;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 72px 24px 96px;
+    }
+
+    /* ── Header ── */
+    header {
+      margin-bottom: 52px;
+      animation: fadeUp .55s ease both;
+    }
+
+    .wordmark {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 44px;
+      letter-spacing: -.03em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .wordmark em {
+      font-style: italic;
+      font-weight: 200;
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 36px 0;
+    }
+
+    /* ── Section labels ── */
+    .label {
+      font-size: 11px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Create form ── */
+    .create-section { animation: fadeUp .55s .1s ease both; }
+
+    .form-wrap {
+      display: flex;
+      align-items: stretch;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: border-color var(--ease), box-shadow var(--ease);
+    }
+
+    .form-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--accent-glow);
+    }
+
+    .slug-sigil {
+      display: flex;
+      align-items: center;
+      padding: 0 2px 0 14px;
+      color: var(--accent);
+      user-select: none;
+      flex-shrink: 0;
+      font-size: 15px;
+    }
+
+    .sep {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      color: var(--muted);
+      user-select: none;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .vr {
+      width: 1px;
+      background: var(--border);
+      margin: 10px 0;
+      flex-shrink: 0;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 13px 10px;
+      outline: none;
+      min-width: 0;
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    #slug-input { width: 130px; flex-shrink: 0; }
+    #url-input  { flex: 1; }
+
+    .btn-add {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 0 22px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background var(--ease);
+    }
+
+    .btn-add:hover    { background: var(--accent-hi); }
+    .btn-add:active   { background: #b8852d; }
+    .btn-add:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Links list ── */
+    .links-section { animation: fadeUp .55s .2s ease both; }
+
+    .links-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1px 10px;
+      font-family: var(--mono);
+    }
+
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .link-row {
+      display: grid;
+      grid-template-columns: 150px 20px 1fr 32px;
+      align-items: center;
+      padding: 11px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      transition: background var(--ease), border-color var(--ease);
+      animation: slideIn .28s ease both;
+      overflow: hidden;
+    }
+
+    .link-row:hover {
+      background: var(--surface-hi);
+      border-color: var(--border-hi);
+    }
+
+    .link-slug {
+      color: var(--accent);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: none;
+    }
+
+    .link-slug:hover { text-decoration: underline; text-decoration-style: dotted; }
+
+    .link-arrow {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .link-url {
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 10px;
+    }
+
+    .link-url a { color: inherit; text-decoration: none; }
+    .link-url a:hover { color: var(--text); }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      padding: 3px 6px;
+      border-radius: 3px;
+      opacity: 0;
+      transition: color var(--ease), background var(--ease), opacity var(--ease);
+      font-family: var(--mono);
+      justify-self: end;
+    }
+
+    .link-row:hover .btn-del        { opacity: 1; }
+    .btn-del:hover                  { color: var(--danger-text); background: var(--danger-bg); }
+
+    .link-row.removing {
+      animation: slideOut .22s ease forwards;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 52px 0;
+      color: var(--muted);
+      font-size: 13px;
+      animation: fadeUp .4s ease both;
+      line-height: 2;
+    }
+
+    .empty-glyph {
+      display: block;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 36px;
+      font-weight: 200;
+      color: var(--border-hi);
+      margin-bottom: 8px;
+    }
+
+    /* ── Toasts ── */
+    #toasts {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 9998;
+    }
+
+    .toast {
+      background: var(--surface-hi);
+      border: 1px solid var(--border-hi);
+      border-radius: 3px;
+      padding: 9px 14px;
+      font-size: 12px;
+      letter-spacing: .03em;
+      max-width: 300px;
+      animation: toastIn .22s ease both;
+    }
+
+    .toast.success { border-color: var(--accent);      color: var(--accent); }
+    .toast.error   { border-color: #8b3a3a;            color: var(--danger-text); }
+    .toast.info    { color: var(--text); }
+    .toast.out     { animation: toastOut .18s ease forwards; }
+
+    /* ── Keyframes ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0);  max-height: 58px; }
+      to   { opacity: 0; transform: translateX(10px); max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; border-width: 0; }
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(6px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(.96); }
+    }
+
+    ::-webkit-scrollbar       { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="wordmark">pq<em>no</em></div>
+    <div class="tagline">Short link registry</div>
+  </header>
+
+  <div class="create-section">
+    <div class="label">New link</div>
+    <div class="form-wrap">
+      <span class="slug-sigil">/</span>
+      <input type="text" id="slug-input" placeholder="slug" autocomplete="off" spellcheck="false">
+      <span class="vr"></span>
+      <span class="sep">→</span>
+      <input type="text" id="url-input" placeholder="https://destination.url" autocomplete="off" spellcheck="false">
+      <button class="btn-add" id="add-btn" onclick="createLink()">Add</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="links-section">
+    <div class="links-header">
+      <div class="label" style="margin:0">Links</div>
+      <span class="badge" id="badge">0</span>
+    </div>
+    <div class="links-list" id="links-list">
+      <div class="empty">
+        <span class="empty-glyph">∅</span>
+        No links yet.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toasts"></div>
+
+<script>
+  async function loadLinks() {
+    const res = await fetch('/links');
+    const data = await res.json();
+    const entries = Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]));
+    const list = document.getElementById('links-list');
+    const badge = document.getElementById('badge');
+
+    badge.textContent = entries.length;
+
+    if (!entries.length) {
+      list.innerHTML = `<div class="empty"><span class="empty-glyph">∅</span>No links yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = entries.map(([slug, url], i) => `
+      <div class="link-row" id="row-${CSS.escape(slug)}" style="animation-delay:${i * 35}ms">
+        <span class="link-slug" onclick="copyLink('${ea(slug)}')" title="Copy short URL">/<!-- -->${eh(slug)}</span>
+        <span class="link-arrow">→</span>
+        <span class="link-url"><a href="${eh(url)}" target="_blank" rel="noopener">${eh(url)}</a></span>
+        <button class="btn-del" onclick="deleteLink('${ea(slug)}')" title="Remove">×</button>
+      </div>
+    `).join('');
+  }
+
+  async function createLink() {
+    const slugEl = document.getElementById('slug-input');
+    const urlEl  = document.getElementById('url-input');
+    const btn    = document.getElementById('add-btn');
+    const slug   = slugEl.value.trim();
+    const url    = urlEl.value.trim();
+
+    if (!slug || !url) { toast('Both slug and URL are required.', 'error'); return; }
+
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error();
+    } catch {
+      toast('URL must start with http:// or https://', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, url }),
+    });
+
+    if (res.status === 201) {
+      slugEl.value = '';
+      urlEl.value  = '';
+      toast(`/${slug} created`, 'success');
+      loadLinks();
+    } else if (res.status === 409) {
+      toast(`/${slug} already exists`, 'error');
+    } else if (res.status === 422) {
+      toast('Invalid URL.', 'error');
+    } else {
+      toast(`Error ${res.status}`, 'error');
+    }
+    btn.disabled = false;
+  }
+
+  async function deleteLink(slug) {
+    const row = document.getElementById('row-' + CSS.escape(slug));
+    if (row) row.classList.add('removing');
+    await new Promise(r => setTimeout(r, 200));
+    const res = await fetch('/' + encodeURIComponent(slug), { method: 'DELETE' });
+    if (res.status === 204) {
+      loadLinks();
+    } else {
+      if (row) row.classList.remove('removing');
+      toast('Could not remove link.', 'error');
+    }
+  }
+
+  async function copyLink(slug) {
+    const url = `${location.origin}/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(`Copied /${slug}`, 'success');
+    } catch {
+      toast(url, 'info');
+    }
+  }
+
+  function toast(msg, type = 'info') {
+    const c  = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    c.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 200);
+    }, 3000);
+  }
+
+  function eh(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function ea(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+  document.getElementById('slug-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('url-input').focus();
+  });
+  document.getElementById('url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') createLink();
+  });
+
+  loadLinks();
+</script>
+</body>
+</html>
