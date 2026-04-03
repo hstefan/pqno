@@ -4,7 +4,7 @@ extern crate rocket;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use rocket::fs::NamedFile;
+use rocket::fs::{FileServer, NamedFile};
 use rocket::http::Status;
 use rocket::response::Redirect;
 use rocket::serde::json::Json;
@@ -125,5 +125,6 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(Mutex::new(conn))
+        .mount("/static", FileServer::from("static/"))
         .mount("/", routes![index, list, create, redirect, delete])
 }
