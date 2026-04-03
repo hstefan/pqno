@@ -89,13 +89,13 @@ fn create(req: Json<CreateRequest>, db: &State<Db>) -> (Status, Json<CreateRespo
 }
 
 #[get("/<slug>")]
-fn redirect(slug: &str, db: &State<Db>) -> Result<Redirect, Status> {
+fn redirect(slug: &str, db: &State<Db>) -> Redirect {
     let conn = db.lock().unwrap();
     conn.query_row("SELECT url FROM links WHERE slug = ?1", [slug], |row| {
         row.get::<_, String>(0)
     })
     .map(|url| Redirect::to(url))
-    .map_err(|_| Status::NotFound)
+    .unwrap_or_else(|_| Redirect::to(format!("/?slug={}", slug)))
 }
 
 #[delete("/<slug>")]

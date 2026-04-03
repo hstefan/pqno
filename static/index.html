@@ -506,6 +506,13 @@
     if (e.key === 'Enter') createLink();
   });
 
+  const prefill = new URLSearchParams(location.search).get('slug');
+  if (prefill) {
+    document.getElementById('slug-input').value = prefill;
+    document.getElementById('url-input').focus();
+    history.replaceState(null, '', '/');
+  }
+
   loadLinks();
 </script>
 </body>
