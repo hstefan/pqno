@@ -113,7 +113,8 @@ fn delete(slug: &str, db: &State<Db>) -> Status {
 
 #[launch]
 fn rocket() -> _ {
-    let conn = Connection::open("pqno.db").expect("failed to open database");
+    let db_path = std::env::var("DB_PATH").unwrap_or_else(|_| "pqno.db".to_string());
+    let conn = Connection::open(&db_path).expect("failed to open database");
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS links (
             slug TEXT PRIMARY KEY,

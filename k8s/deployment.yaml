@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pqno
+  namespace: pqno
+spec:
+  # SQLite supports only one writer — keep replicas at 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pqno
+  template:
+    metadata:
+      labels:
+        app: pqno
+    spec:
+      containers:
+        - name: pqno
+          image: hstefanp/pqno:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ROCKET_ADDRESS
+              value: "0.0.0.0"
+            - name: DB_PATH
+              value: /data/pqno.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pqno-data

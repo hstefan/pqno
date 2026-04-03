@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pqno
+  namespace: pqno
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: pqno.lab.hstefan.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pqno
+                port:
+                  number: 80
